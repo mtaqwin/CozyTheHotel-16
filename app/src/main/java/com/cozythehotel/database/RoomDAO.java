@@ -6,7 +6,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoomDAO {
-    public List<Room> ambilSemuaKamar() { 
+    
+    public List<Room> ambilSemuaKamar() {
         List<Room> daftar = new ArrayList<>();
         String kueri = "SELECT * FROM rooms";
         try (Connection koneksi = DBConnection.getConnection();
@@ -25,6 +26,20 @@ public class RoomDAO {
             galat.printStackTrace();
         }
         return daftar;
+    }
+
+    public int getJumlahTerisiBerdasarkanTanggal(String tanggal) {
+        String kueri = "SELECT COUNT(DISTINCT room_id) FROM reservations WHERE check_in <= ? AND check_out >= ? AND status = 'Belum Checkout'";
+        try (Connection koneksi = DBConnection.getConnection();
+             PreparedStatement pernyataan = koneksi.prepareStatement(kueri)) {
+            pernyataan.setString(1, tanggal);
+            pernyataan.setString(2, tanggal);
+            ResultSet hasil = pernyataan.executeQuery();
+            if (hasil.next()) return hasil.getInt(1);
+        } catch (SQLException galat) {
+            galat.printStackTrace();
+        }
+        return 0;
     }
 
     public int getJumlahTotalKamar() {
