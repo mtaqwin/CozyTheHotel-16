@@ -6,7 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class RoomDAO {
-    
     public List<Room> ambilSemuaKamar() {
         List<Room> daftar = new ArrayList<>();
         String kueri = "SELECT * FROM rooms";
@@ -20,6 +19,36 @@ public class RoomDAO {
                         hasil.getString("room_type"),
                         hasil.getString("status"),
                         hasil.getString("customer_name")
+                ));
+            }
+        } catch (SQLException galat) {
+            galat.printStackTrace();
+        }
+        return daftar;
+    }
+
+    public List<Room> getStatusKamarBerdasarkanTanggal(String tanggal) {
+        List<Room> daftar = new ArrayList<>();
+        String kueri = "SELECT r.*, res.customer_name as tamu_saat_ini " +
+                       "FROM rooms r " +
+                       "LEFT JOIN (SELECT reservations.*, customers.name as customer_name " +
+                       "           FROM reservations " +
+                       "           JOIN customers ON reservations.customer_id = customers.id " +
+                       "           WHERE check_in <= ? AND check_out >= ? AND status = 'Belum Checkout') res " +
+                       "ON r.id = res.room_id";
+        try (Connection koneksi = DBConnection.getConnection();
+             PreparedStatement pernyataan = koneksi.prepareStatement(kueri)) {
+            pernyataan.setString(1, tanggal);
+            pernyataan.setString(2, tanggal);
+            ResultSet hasil = pernyataan.executeQuery();
+            while (hasil.next()) {
+                String tamu = hasil.getString("tamu_saat_ini");
+                daftar.add(new Room(
+                        hasil.getInt("id"),
+                        hasil.getString("room_number"),
+                        hasil.getString("room_type"),
+                        tamu != null ? "Occupied" : "Available",
+                        tamu
                 ));
             }
         } catch (SQLException galat) {
