@@ -88,4 +88,27 @@ public class ReservationDAO {
         }
         return daftar;
     }
+
+        public void perbaruiStatusReservasi(int id, String status) {
+        String kueri = "UPDATE reservations SET status = ? WHERE id = ?";
+        try (Connection koneksi = DBConnection.getConnection();
+             PreparedStatement pernyataan = koneksi.prepareStatement(kueri)) {
+            pernyataan.setString(1, status);
+            pernyataan.setInt(2, id);
+            pernyataan.executeUpdate();
+        } catch (SQLException galat) {
+            galat.printStackTrace();
+        }
+    }
+
+    public void hapusReservasiBerdasarkanIdKamar(int idKamar) {
+        String kueri = "DELETE FROM reservations WHERE room_id = ?";
+        try (Connection koneksi = DBConnection.getConnection();
+             PreparedStatement pernyataan = koneksi.prepareStatement(kueri)) {
+            pernyataan.setInt(1, idKamar);
+            pernyataan.executeUpdate();
+        } catch (SQLException galat) {
+            galat.printStackTrace();
+        }
+    }
 }
